@@ -112,7 +112,8 @@ func listTeamDrives(driveApi *drive.Service, admin bool) ([]*drive.Drive, error)
 	var teamDrives []*drive.Drive
 
 	logrus.Debugf("Getting Drive List with admin: %t", admin)
-	err := driveApi.Drives.List().UseDomainAdminAccess(admin).PageSize(100).Pages(context.Background(), func(list *drive.DriveList) error {
+	// * field because Google Api is fucking broken and doesn't return hidden
+	err := driveApi.Drives.List().UseDomainAdminAccess(admin).Fields("*").PageSize(100).Pages(context.Background(), func(list *drive.DriveList) error {
 		teamDrives = append(teamDrives, list.Drives...)
 		return nil
 	})
@@ -122,4 +123,12 @@ func listTeamDrives(driveApi *drive.Service, admin bool) ([]*drive.Drive, error)
 	}
 
 	return teamDrives, nil
+}
+
+func HideTeamDrive(driveApi *drive.Service, driveId string) (*drive.Drive, error) {
+	return driveApi.Drives.Hide(driveId).Do()
+}
+
+func UnHideTeamDrive(driveApi *drive.Service, driveId string) (*drive.Drive, error) {
+	return driveApi.Drives.Unhide(driveId).Do()
 }
